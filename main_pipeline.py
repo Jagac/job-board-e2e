@@ -4,8 +4,13 @@ import logging.config
 import configparser
 import json
 import polars as pl
+from datetime import datetime, timedelta
+
 
 # setting up a nicely formatted log
+today = datetime.today().strftime('%m-%d-%Y')
+yesterday = (datetime.now() - timedelta(1)).strftime('%m-%d-%Y')
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -18,9 +23,6 @@ stream_handler = logging.StreamHandler()
 file_handler = logging.FileHandler(JobConfig['LogName'])
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
-
-logger.info('Start Extract Session')
-logger.info('Source Filename: {}'.format(JobConfig['SrcObject']))
 
 
 def extract():
@@ -43,7 +45,7 @@ def extract():
 
     def load_data():
         try:
-            # request_from_api()
+            request_from_api()
             f = open('jobs.json', encoding="utf-8")
             logger.info('Source Filename: {}'.format(JobConfig['SrcObject']))
             return json.load(f)
@@ -101,15 +103,32 @@ def extract():
                  pl.col('column_17').alias('Company logo'),
                  pl.col('column_18').alias('Skills'),
                  pl.col('column_19').alias('Remote'),
-                 pl.col('column_20').alias('Open to hire Ukrainians')
-                 ]
-            )
+                 pl.col('column_20').alias('Open to hire Ukrainians')])
+
+            df_pl = df_pl.with_columns(pl.lit(today).alias('Script Run Date'))
 
             return df_pl
 
     df = create_dataframe()
+    df.write_parquet(f'C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\data {today}.parquet')
 
-    return df
+
+def merge():
+    new = pl.read_parquet(f'data {today}.parquet')
+    try:
+        old = pl.read_parquet(f'data {yesterday}.parquet')
+    except:
+        old = new
+
+    new_df = pl.concat([new, old], rechunk=True)
+    new_df = new_df.unique(subset=['ID'])
+    new_df.write_parquet(f'C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\data_final {today}.parquet')
 
 
-test = extract()
+def main():
+    extract()
+    merge()
+
+
+if __name__ == "__main__":
+    main()
