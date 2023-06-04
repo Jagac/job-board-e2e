@@ -1,0 +1,9 @@
+INFO:  2023-06-03 21:35:28,294:  5268:  <module>:  Start Extract Session
+INFO:  2023-06-03 21:35:28,294:  5268:  <module>:  Source Filename: jobs.json
+INFO:  2023-06-03 21:35:28,294:  5268:  extract:  Start Extract Session
+INFO:  2023-06-03 21:35:39,973:  5268:  request_from_api:  Request completed successfully
+INFO:  2023-06-03 21:35:39,990:  5268:  load_data:  Source Filename: jobs.json
+INFO:  2023-06-03 21:40:43,938:  3612:  <module>:  Start Extract Session
+INFO:  2023-06-03 21:40:43,938:  3612:  <module>:  Source Filename: jobs.json
+INFO:  2023-06-03 21:40:43,938:  3612:  extract:  Start Extract Session
+INFO:  2023-06-03 21:40:43,939:  3612:  load_data:  Source Filename: jobs.json

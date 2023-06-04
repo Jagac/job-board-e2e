@@ -5,7 +5,6 @@ import configparser
 import json
 import polars as pl
 
-
 # setting up a nicely formatted log
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -25,6 +24,10 @@ logger.info('Source Filename: {}'.format(JobConfig['SrcObject']))
 
 
 def extract():
+    """
+    Extract data from the justjoin API and transform it into a polars dataframe
+    :return: pl.DataFrame
+    """
     logger.info('Start Extract Session')
 
     def request_from_api():
@@ -40,7 +43,7 @@ def extract():
 
     def load_data():
         try:
-            #request_from_api()
+            # request_from_api()
             f = open('jobs.json', encoding="utf-8")
             logger.info('Source Filename: {}'.format(JobConfig['SrcObject']))
             return json.load(f)
@@ -78,7 +81,29 @@ def extract():
 
             df_pl = pl.DataFrame(data)
             df_pl = df_pl.select(
-                [pl.col("column_0").alias("Title")])
+                [pl.col('column_0').alias('Title'),
+                 pl.col('column_1').alias('Street'),
+                 pl.col('column_2').alias('City'),
+                 pl.col('column_3').alias('Country Code'),
+                 pl.col('column_4').alias('Address Text'),
+                 pl.col('column_5').alias('Marker Icon'),
+                 pl.col('column_6').alias('Workplace Type'),
+                 pl.col('column_7').alias('Company Name'),
+                 pl.col('column_8').alias('Company Url'),
+                 pl.col('column_9').alias('Company Size'),
+                 pl.col('column_10').alias('Experience Level'),
+                 pl.col('column_11').alias('Latitude'),
+                 pl.col('column_12').alias('Longitude'),
+                 pl.col('column_13').alias('Published at'),
+                 pl.col('column_14').alias('Remote interview'),
+                 pl.col('column_15').alias('ID'),
+                 pl.col('column_16').alias('Employment types'),
+                 pl.col('column_17').alias('Company logo'),
+                 pl.col('column_18').alias('Skills'),
+                 pl.col('column_19').alias('Remote'),
+                 pl.col('column_20').alias('Open to hire Ukrainians')
+                 ]
+            )
 
             return df_pl
 
@@ -88,6 +113,3 @@ def extract():
 
 
 test = extract()
-print(test.head(5))
-
-
