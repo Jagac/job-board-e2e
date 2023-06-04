@@ -1,11 +1,11 @@
-import requests
-import os
-import logging.config
-import configparser
 import json
 import polars as pl
+import requests
+import logging.config
+import configparser
 from datetime import datetime, timedelta
-
+import time
+import psutil
 
 # setting up a nicely formatted log
 today = datetime.today().strftime('%m-%d-%Y')
@@ -47,7 +47,7 @@ def extract():
         try:
             request_from_api()
             f = open('jobs.json', encoding="utf-8")
-            logger.info('Source Filename: {}'.format(JobConfig['SrcObject']))
+            logger.info('Loaded: {}'.format(JobConfig['SrcObject']))
             return json.load(f)
 
         except ValueError as e:
@@ -55,8 +55,9 @@ def extract():
 
     def create_dataframe():
         loaded_json = load_data()
+        logger.info('Converting to parquet file')
         data = []
-        i = 0
+
         for i, record in enumerate(loaded_json):
             data.append([
                 loaded_json[i]['title'],
@@ -111,6 +112,7 @@ def extract():
 
     df = create_dataframe()
     df.write_parquet(f'C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\data {today}.parquet')
+    logger.info('Successfully converted to parquet')
 
 
 def merge():
@@ -123,11 +125,23 @@ def merge():
     new_df = pl.concat([new, old], rechunk=True)
     new_df = new_df.unique(subset=['ID'])
     new_df.write_parquet(f'C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\data_final {today}.parquet')
+    logger.info('Successfully merged data')
 
 
 def main():
+    start1 = time.time()
     extract()
+    end1 = time.time() - start1
+    logger.info("Extract took : {} seconds".format(end1))
+    logger.info('Extract CPU usage {}%'.format(psutil.cpu_percent()))
+    logger.info('RAM memory {}% used:'.format(psutil.virtual_memory().percent))
+
+    start2 = time.time()
     merge()
+    end2 = time.time() - start2
+    logger.info("Merge took : {} seconds".format(end2))
+    logger.info('Merge CPU usage {}%'.format(psutil.cpu_percent()))
+    logger.info('RAM memory {}% used:'.format(psutil.virtual_memory().percent))
 
 
 if __name__ == "__main__":
