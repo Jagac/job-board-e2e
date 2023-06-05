@@ -1,12 +1,12 @@
-INFO:  2023-06-04 19:02:24,556:  12172:  extract:  Start Extract Session
-INFO:  2023-06-04 19:02:33,144:  12172:  request_from_api:  Request completed successfully
-INFO:  2023-06-04 19:02:33,157:  12172:  load_data:  Loaded: jobs.json
-INFO:  2023-06-04 19:02:33,671:  12172:  create_dataframe:  Converting to parquet file
-INFO:  2023-06-04 19:02:33,744:  12172:  extract:  Successfully converted to parquet
-INFO:  2023-06-04 19:02:33,745:  12172:  main:  Extract took : 9.188096523284912 seconds
-INFO:  2023-06-04 19:02:33,745:  12172:  main:  Extract CPU usage 2.6%
-INFO:  2023-06-04 19:02:33,749:  12172:  main:  RAM memory 50.7% used:
-INFO:  2023-06-04 19:02:33,777:  12172:  merge:  Successfully merged data
-INFO:  2023-06-04 19:02:33,777:  12172:  main:  Merge took : 0.02869868278503418 seconds
-INFO:  2023-06-04 19:02:33,777:  12172:  main:  Merge CPU usage 6.2%
-INFO:  2023-06-04 19:02:33,781:  12172:  main:  RAM memory 50.7% used:
+INFO:  2023-06-05 15:10:00,709:  8452:  extract:  Start Extract Session
+INFO:  2023-06-05 15:10:17,200:  8452:  request_from_api:  Request completed successfully
+INFO:  2023-06-05 15:10:17,206:  8452:  load_data:  Loaded: jobs.json
+INFO:  2023-06-05 15:10:17,840:  8452:  create_dataframe:  Converting to csv file
+INFO:  2023-06-05 15:10:17,888:  8452:  extract:  Successfully converted to csv
+INFO:  2023-06-05 15:10:17,888:  8452:  main:  Extract took : 17.179460763931274 seconds
+INFO:  2023-06-05 15:10:17,888:  8452:  main:  Extract CPU usage 3.3%
+INFO:  2023-06-05 15:10:17,892:  8452:  main:  RAM memory 46.9% used:
+INFO:  2023-06-05 15:10:17,901:  8452:  merge:  Successfully merged data
+INFO:  2023-06-05 15:10:17,901:  8452:  main:  Merge took : 0.00810694694519043 seconds
+INFO:  2023-06-05 15:10:17,901:  8452:  main:  Merge CPU usage 6.2%
+INFO:  2023-06-05 15:10:17,903:  8452:  main:  RAM memory 46.9% used:

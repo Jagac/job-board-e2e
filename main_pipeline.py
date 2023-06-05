@@ -1,5 +1,5 @@
 import json
-import polars as pl
+import pandas as pd
 import requests
 import logging.config
 import configparser
@@ -55,7 +55,7 @@ def extract():
 
     def create_dataframe():
         loaded_json = load_data()
-        logger.info('Converting to parquet file')
+        logger.info('Converting to csv file')
         data = []
 
         for i, record in enumerate(loaded_json):
@@ -82,49 +82,46 @@ def extract():
                 loaded_json[i]['remote'],
                 loaded_json[i]['open_to_hire_ukrainians']])
 
-            df_pl = pl.DataFrame(data)
-            df_pl = df_pl.select(
-                [pl.col('column_0').alias('Title'),
-                 pl.col('column_1').alias('Street'),
-                 pl.col('column_2').alias('City'),
-                 pl.col('column_3').alias('Country Code'),
-                 pl.col('column_4').alias('Address Text'),
-                 pl.col('column_5').alias('Marker Icon'),
-                 pl.col('column_6').alias('Workplace Type'),
-                 pl.col('column_7').alias('Company Name'),
-                 pl.col('column_8').alias('Company Url'),
-                 pl.col('column_9').alias('Company Size'),
-                 pl.col('column_10').alias('Experience Level'),
-                 pl.col('column_11').alias('Latitude'),
-                 pl.col('column_12').alias('Longitude'),
-                 pl.col('column_13').alias('Published at'),
-                 pl.col('column_14').alias('Remote interview'),
-                 pl.col('column_15').alias('ID'),
-                 pl.col('column_16').alias('Employment types'),
-                 pl.col('column_17').alias('Company logo'),
-                 pl.col('column_18').alias('Skills'),
-                 pl.col('column_19').alias('Remote'),
-                 pl.col('column_20').alias('Open to hire Ukrainians')])
+            df = pd.DataFrame(data,
+                              columns=['Title',
+                                       'Street',
+                                       'City',
+                                       'Country Code',
+                                       'Address Text',
+                                       'Marker Icon',
+                                       'Workplace Type',
+                                       'Company Name',
+                                       'Company Url',
+                                       'Company Size',
+                                       'Experience Level',
+                                       'Latitude',
+                                       'Longitude',
+                                       'Published At',
+                                       'Remote interview',
+                                       'ID',
+                                       'Employment Types',
+                                       'Company Logo',
+                                       'Skills',
+                                       'Remote',
+                                       'Open to Hire Ukrainians'])
 
-            df_pl = df_pl.with_columns(pl.lit(today).alias('Script Run Date'))
+            return df
 
-            return df_pl
-
-    df = create_dataframe()
-    df.write_parquet(f'C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\data {today}.parquet')
-    logger.info('Successfully converted to parquet')
+    df_converted = create_dataframe()
+    df_converted = df_converted.drop_duplicates(subset=['ID'])
+    df_converted.to_csv(f'C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\data {today}.csv')
+    logger.info('Successfully converted to csv')
 
 
 def merge():
-    new = pl.read_parquet(f'data {today}.parquet')
+    new = pd.read_csv(f'data {today}.csv')
     try:
-        old = pl.read_parquet(f'data {yesterday}.parquet')
+        old = pd.read_csv(f'data {yesterday}.csv')
     except:
-        old = new
+        old = pd.DataFrame()
 
-    new_df = pl.concat([new, old], rechunk=True)
-    new_df = new_df.unique(subset=['ID'])
-    new_df.write_parquet(f'C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\data_final {today}.parquet')
+    new_df = pd.concat([new, old], axis=0)
+    new_df.to_csv(f'C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\data_final {today}.csv')
     logger.info('Successfully merged data')
 
 
@@ -134,14 +131,14 @@ def main():
     end1 = time.time() - start1
     logger.info("Extract took : {} seconds".format(end1))
     logger.info('Extract CPU usage {}%'.format(psutil.cpu_percent()))
-    logger.info('RAM memory {}% used:'.format(psutil.virtual_memory().percent))
+    logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
 
     start2 = time.time()
     merge()
     end2 = time.time() - start2
     logger.info("Merge took : {} seconds".format(end2))
     logger.info('Merge CPU usage {}%'.format(psutil.cpu_percent()))
-    logger.info('RAM memory {}% used:'.format(psutil.virtual_memory().percent))
+    logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
 
 
 if __name__ == "__main__":
