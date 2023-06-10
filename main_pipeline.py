@@ -59,58 +59,62 @@ def extract():
         logger.info('Converting to csv file')
         data = []
         i = 0
-        
-        for i in loaded_json:
-            data.append([
-                loaded_json[i]['title'],
-                loaded_json[i]['street'],
-                loaded_json[i]['city'],
-                loaded_json[i]['country_code'],
-                loaded_json[i]['address_text'],
-                loaded_json[i]['marker_icon'],
-                loaded_json[i]['workplace_type'],
-                loaded_json[i]['company_name'],
-                loaded_json[i]['company_url'],
-                loaded_json[i]['company_size'],
-                loaded_json[i]['experience_level'],
-                loaded_json[i]['latitude'],
-                loaded_json[i]['longitude'],
-                loaded_json[i]['published_at'],
-                loaded_json[i]['remote_interview'],
-                loaded_json[i]['id'],
-                loaded_json[i]['employment_types'],
-                loaded_json[i]['company_logo_url'],
-                loaded_json[i]['skills'],
-                loaded_json[i]['remote'],
-                loaded_json[i]['open_to_hire_ukrainians']])
+        try:
+            for i, record in enumerate(loaded_json):
+                data.append([
+                    loaded_json[i]['title'],
+                    loaded_json[i]['street'],
+                    loaded_json[i]['city'],
+                    loaded_json[i]['country_code'],
+                    loaded_json[i]['address_text'],
+                    loaded_json[i]['marker_icon'],
+                    loaded_json[i]['workplace_type'],
+                    loaded_json[i]['company_name'],
+                    loaded_json[i]['company_url'],
+                    loaded_json[i]['company_size'],
+                    loaded_json[i]['experience_level'],
+                    loaded_json[i]['latitude'],
+                    loaded_json[i]['longitude'],
+                    loaded_json[i]['published_at'],
+                    loaded_json[i]['remote_interview'],
+                    loaded_json[i]['id'],
+                    loaded_json[i]['employment_types'],
+                    loaded_json[i]['company_logo_url'],
+                    loaded_json[i]['skills'],
+                    loaded_json[i]['remote'],
+                    loaded_json[i]['open_to_hire_ukrainians']])
+                
+                i += 1
             
-            i += 1
-            
-        df = pd.DataFrame(data,
-                            columns=['Title',
-                                    'Street',
-                                    'City',
-                                    'Country Code',
-                                    'Address Text',
-                                    'Marker Icon',
-                                    'Workplace Type',
-                                    'Company Name',
-                                    'Company Url',
-                                    'Company Size',
-                                    'Experience Level',
-                                    'Latitude',
-                                    'Longitude',
-                                    'Published At',
-                                    'Remote interview',
-                                    'ID',
-                                    'Employment Types',
-                                    'Company Logo',
-                                    'Skills',
-                                    'Remote',
-                                    'Open to Hire Ukrainians'])
+            df = pd.DataFrame(data,
+                                columns=['Title',
+                                        'Street',
+                                        'City',
+                                        'Country Code',
+                                        'Address Text',
+                                        'Marker Icon',
+                                        'Workplace Type',
+                                        'Company Name',
+                                        'Company Url',
+                                        'Company Size',
+                                        'Experience Level',
+                                        'Latitude',
+                                        'Longitude',
+                                        'Published At',
+                                        'Remote interview',
+                                        'ID',
+                                        'Employment Types',
+                                        'Company Logo',
+                                        'Skills',
+                                        'Remote',
+                                        'Open to Hire Ukrainians'])
 
+        except ValueError as e:
+            logger.error(e)
+            
         return df
 
+                
     df_converted = create_dataframe()
     df_converted = df_converted.drop_duplicates(subset=['ID'])
     df_converted.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv')
