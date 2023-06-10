@@ -21,7 +21,7 @@ JobConfig = config['ETL_Log_Job']
 
 formatter = logging.Formatter('%(levelname)s:  %(asctime)s:  %(process)s:  %(funcName)s:  %(message)s')
 stream_handler = logging.StreamHandler()
-file_handler = logging.FileHandler(JobConfig['log_name'])
+file_handler = logging.FileHandler(f'/home/jagac/projects/job-board-e2e/etl_logs/etl_log_job {today}.log')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
@@ -39,8 +39,8 @@ def extract():
             r = requests.get(url, allow_redirects=True)
             open(f'/home/jagac/projects/job-board-e2e/json_data/jobs {today}.json', 'wb').write(r.content)
 
-        except ValueError as e:
-            logger.error(e)
+        except Exception as e:
+            logger.exception(e)
 
         logger.info('Request completed successfully')
 
@@ -51,8 +51,8 @@ def extract():
             logger.info('Loaded: {}'.format(JobConfig['src_object']))
             return json.load(f)
 
-        except ValueError as e:
-            logger.error(e)
+        except Exception as e:
+            logger.exception(e)
 
     def create_dataframe():
         loaded_json = load_data()
@@ -109,8 +109,8 @@ def extract():
                                         'Remote',
                                         'Open to Hire Ukrainians'])
 
-        except ValueError as e:
-            logger.error(e)
+        except Exception as e:
+            logger.exception(e)
             
         return df
 
