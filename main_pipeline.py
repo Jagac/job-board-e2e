@@ -90,6 +90,19 @@ def extract():
                     loaded_json[i]['open_to_hire_ukrainians']])
                 i += 1
 
+            
+            for i in range(len(salary_temp)):
+                try:
+                    salary_from.append([i, salary_temp[i]['from']])
+                except:
+                    salary_from.append([i, 'na'])
+                    
+            for i in range(len(salary_temp)):
+                try:
+                    salary_to.append([i, salary_temp[i]['to']])
+                except:
+                    salary_to.append([i, 'na'])
+                    
             df = pd.DataFrame(data,
                             columns=['Title',
                                     'Street',
@@ -108,20 +121,7 @@ def extract():
                                     'ID',
                                     'Remote',
                                     'Open to Hire Ukrainians'])
-            
-            for i in range(len(salary_temp)):
-                try:
-                    salary_from.append([i, salary_temp[i]['from']])
-                except:
-                    salary_from.append([i, 'na'])
-                    
-            for i in range(len(salary_temp)):
-                try:
-                    salary_to.append([i, salary_temp[i]['to']])
-                except:
-                    salary_to.append([i, 'na'])
-                    
-                    
+                
             df_skills = pd.DataFrame(skills_data, columns=('Index', "Skills"))
             df_employment_types = pd.DataFrame(employment_type_data, columns=('Index', 'Employment Types'))
             df_from = pd.DataFrame(salary_from, columns=('Index', 'Salary From'))
