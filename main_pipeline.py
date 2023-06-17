@@ -7,18 +7,12 @@ from datetime import datetime, timedelta
 import time
 import psutil
 
-
 # setting up a nicely formatted log
 today = datetime.today().strftime('%m-%d-%Y')
 yesterday = (datetime.now() - timedelta(1)).strftime('%m-%d-%Y')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-config = configparser.ConfigParser()
-config.read('etl_config.ini')
-JobConfig = config['ETL_Log_Job']
-
 formatter = logging.Formatter('%(levelname)s:  %(asctime)s:  %(process)s:  %(funcName)s:  %(message)s')
 stream_handler = logging.StreamHandler()
 file_handler = logging.FileHandler(f'/home/jagac/projects/job-board-e2e/etl_logs/etl_log_job {today}.log')
@@ -48,7 +42,7 @@ def extract():
         try:
             request_from_api()
             f = open(f'/home/jagac/projects/job-board-e2e/json_data/jobs {today}.json', encoding="utf-8")
-            logger.info('Loaded: {}'.format(JobConfig['src_object']))
+            logger.info('Loaded: {}'.format(f))
             return json.load(f)
 
         except Exception as e:
@@ -58,9 +52,24 @@ def extract():
         loaded_json = load_data()
         logger.info('Converting to csv file')
         data = []
+        skills_data = []
+        employment_type_data = []
+        salary_temp = []
+        salary_from = []
+        salary_to = []
+        
         i = 0
         try:
             for i, record in enumerate(loaded_json):
+                for j in loaded_json[i]['skills']:
+                    skills_data.append([i, j['name']])
+                    
+                for k in loaded_json[i]['employment_types']:
+                    employment_type_data.append([i, k['type']])
+                    
+                for l in loaded_json[i]['employment_types']:
+                    salary_temp.append(l['salary'])
+        
                 data.append([
                     loaded_json[i]['title'],
                     loaded_json[i]['street'],
@@ -70,7 +79,6 @@ def extract():
                     loaded_json[i]['marker_icon'],
                     loaded_json[i]['workplace_type'],
                     loaded_json[i]['company_name'],
-                    loaded_json[i]['company_url'],
                     loaded_json[i]['company_size'],
                     loaded_json[i]['experience_level'],
                     loaded_json[i]['latitude'],
@@ -78,46 +86,63 @@ def extract():
                     loaded_json[i]['published_at'],
                     loaded_json[i]['remote_interview'],
                     loaded_json[i]['id'],
-                    loaded_json[i]['employment_types'],
-                    loaded_json[i]['company_logo_url'],
-                    loaded_json[i]['skills'],
                     loaded_json[i]['remote'],
                     loaded_json[i]['open_to_hire_ukrainians']])
-                
                 i += 1
-            
-            df = pd.DataFrame(data,
-                                columns=['Title',
-                                        'Street',
-                                        'City',
-                                        'Country Code',
-                                        'Address Text',
-                                        'Marker Icon',
-                                        'Workplace Type',
-                                        'Company Name',
-                                        'Company Url',
-                                        'Company Size',
-                                        'Experience Level',
-                                        'Latitude',
-                                        'Longitude',
-                                        'Published At',
-                                        'Remote interview',
-                                        'ID',
-                                        'Employment Types',
-                                        'Company Logo',
-                                        'Skills',
-                                        'Remote',
-                                        'Open to Hire Ukrainians'])
 
+            df = pd.DataFrame(data,
+                            columns=['Title',
+                                    'Street',
+                                    'City',
+                                    'Country Code',
+                                    'Address Text',
+                                    'Marker Icon',
+                                    'Workplace Type',
+                                    'Company Name',
+                                    'Company Size',
+                                    'Experience Level',
+                                    'Latitude',
+                                    'Longitude',
+                                    'Published At',
+                                    'Remote interview',
+                                    'ID',
+                                    'Remote',
+                                    'Open to Hire Ukrainians'])
+            
+            for i in range(len(salary_temp)):
+                try:
+                    salary_from.append([i, salary_temp[i]['from']])
+                except:
+                    salary_from.append([i, 'na'])
+                    
+            for i in range(len(salary_temp)):
+                try:
+                    salary_to.append([i, salary_temp[i]['to']])
+                except:
+                    salary_to.append([i, 'na'])
+                    
+                    
+            df_skills = pd.DataFrame(skills_data, columns=('Index', "Skills"))
+            df_employment_types = pd.DataFrame(employment_type_data, columns=('Index', 'Employment Types'))
+            df_from = pd.DataFrame(salary_from, columns=('Index', 'Salary From'))
+            df_to = pd.DataFrame(salary_to, columns=('Index', 'Salary To'))
+            #df_skills = df_skills.groupby('Index')['Skills'].agg(lambda col: ', '.join(col))
+            #df_skills.columns = ['Index', 'Skills']
+            df['Index'] = df.index
+            merge1 = pd.merge(df, df_skills, on='Index', how='inner')
+            merge2 = pd.merge(merge1, df_employment_types, on='Index', how='inner')
+            merge3 = pd.merge(merge2, df_from, on='Index', how='inner')
+            merge4 = pd.merge(merge3, df_to, on='Index', how='inner')
+            
         except Exception as e:
             logger.exception(e)
             
-        return df
+        return merge4
 
-                
+    
     df_converted = create_dataframe()
     df_converted = df_converted.drop_duplicates(subset=['ID'])
-    df_converted.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv')
+    df_converted.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index=False)
     logger.info('Successfully converted to csv')
 
 
@@ -129,7 +154,7 @@ def merge():
         old = pd.DataFrame()
 
     new_df = pd.concat([new, old], axis=0)
-    new_df.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv')
+    new_df.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index=False)
     logger.info('Successfully merged data')
     
 
