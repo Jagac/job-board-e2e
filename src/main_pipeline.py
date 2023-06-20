@@ -5,7 +5,7 @@ import logging.config
 from datetime import datetime, timedelta
 import time
 import psutil
-from src.data_quality_tests import run_data_tests
+from data_quality_tests import run_data_tests
 
 # setting up a nicely formatted log
 today = datetime.today().strftime('%m-%d-%Y')
@@ -14,7 +14,6 @@ yesterday = (datetime.now() - timedelta(1)).strftime('%m-%d-%Y')
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(levelname)s:  %(asctime)s:  %(process)s:  %(funcName)s:  %(message)s')
-stream_handler = logging.StreamHandler()
 file_handler = logging.FileHandler(f'/home/jagac/projects/job-board-e2e/etl_logs/etl_log_job {today}.log')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
@@ -185,13 +184,11 @@ def main():
     
     start3 = time.time()
     if run_data_tests:
-        logger.info("All tests passed")
-    else: 
-        logger.info("")
+        logger.info("Passed quality tests")
         
     end3 = time.time() - start3
-    logger.info("Merge took : {} seconds".format(end3))
-    logger.info('Merge CPU usage {}%'.format(psutil.cpu_percent()))
+    logger.info("Quality tests took : {} seconds".format(end3))
+    logger.info('Quality test CPU usage {}%'.format(psutil.cpu_percent()))
     logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
     
 if __name__ == "__main__":
