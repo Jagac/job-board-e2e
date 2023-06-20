@@ -1,7 +1,7 @@
 import great_expectations as gx
+from great_expectations.core.expectation_configuration import ExpectationConfiguration
 import pandas as pd
 from datetime import datetime
-from great_expectations.core.expectation_configuration import ExpectationConfiguration
 
 def run_data_tests():
     today = datetime.today().strftime('%m-%d-%Y')
