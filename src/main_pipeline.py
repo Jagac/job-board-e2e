@@ -48,6 +48,11 @@ def extract():
             logger.exception(e)
 
     def create_dataframe():
+        """Parses json with multiple levels and joins them all on index
+
+        Returns:
+            pd.DataDrame: Dataframe containing data from parsed json
+        """
         loaded_json = load_data()
         logger.info('Converting to csv file')
         data = []
@@ -183,8 +188,10 @@ def main():
 
     
     start3 = time.time()
-    if run_data_tests:
+    if run_data_tests == True:
         logger.info("Passed quality tests")
+    else:
+        logger.info("Fassed quality tests, please check quality report")
         
     end3 = time.time() - start3
     logger.info("Quality tests took : {} seconds".format(end3))

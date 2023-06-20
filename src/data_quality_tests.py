@@ -16,48 +16,7 @@ def run_data_tests():
 
     suite = context.add_or_update_expectation_suite("job_board_suite")
 
-    validator = context.get_validator(
-        batch_request=my_batch_request,
-        expectation_suite_name="job_board_suite",
-    )
-
     expectation_configuration_1 = ExpectationConfiguration(
-    expectation_type="expect_column_values_to_not_be_null",
-    kwargs={
-        "column": "ID",
-    },
-    meta={
-        "notes": {
-            "format": "markdown",
-            "content": "Making sure we have a unique identifier column", }
-        },
-    )
-    
-    expectation_configuration_2 = ExpectationConfiguration(
-    expectation_type="expect_column_to_exist",
-    kwargs={
-        "column": "ID",
-    },
-    meta={
-        "notes": {
-            "format": "markdown",
-            "content": "Making sure we have a unique identifier column", }
-        },
-    )
-    
-    expectation_configuration_3 = ExpectationConfiguration(
-    expectation_type="expect_column_values_to_be_unique",
-    kwargs={
-        "column": "ID",
-    },
-    meta={
-        "notes": {
-            "format": "markdown",
-            "content": "Making sure we have a unique identifier column", }
-        },
-    )
-    
-    expectation_configuration_4 = ExpectationConfiguration(
     expectation_type="expect_table_columns_to_match_ordered_list",
     kwargs={
         'column_list': [
@@ -69,21 +28,53 @@ def run_data_tests():
         ]
     })
     
-
+    expectation_configuration_2 = ExpectationConfiguration(
+    expectation_type="expect_column_values_to_not_be_null",
+    kwargs={
+        "column": "ID",
+    },)
+    
+    expectation_configuration_3 = ExpectationConfiguration(
+    expectation_type="expect_column_to_exist",
+    kwargs={
+        "column": "ID",
+    },)
+    
+    expectation_configuration_4 = ExpectationConfiguration(
+    expectation_type="expect_column_values_to_be_unique",
+    kwargs={
+        "column": "ID",
+    },)
+    
     expectation_configuration_5 = ExpectationConfiguration(
     expectation_type="expect_column_values_to_be_in_set",
     kwargs={
         "column": "Experience Level",
         "value_set": ['mid' 'senior' 'junior'],
-    },
-   
-    )
+    },)
+    
+    expectation_configuration_6 = ExpectationConfiguration(
+    expectation_type="expect_column_values_to_be_in_set",
+    kwargs={
+        "column": "Employment Types",
+        "value_set": ['b2b' 'permanent' 'mandate_contract'],
+    },)
+    
+    expectation_configuration_7 = ExpectationConfiguration(
+    expectation_type="expect_column_values_to_be_in_set",
+    kwargs={
+        "column": "Remote",
+        "value_set": [True, False],
+    },)
+    
     
     suite.add_expectation(expectation_configuration=expectation_configuration_1)
     suite.add_expectation(expectation_configuration=expectation_configuration_2)
     suite.add_expectation(expectation_configuration=expectation_configuration_3)
     suite.add_expectation(expectation_configuration=expectation_configuration_4)
     suite.add_expectation(expectation_configuration=expectation_configuration_5)
+    suite.add_expectation(expectation_configuration=expectation_configuration_6)
+    suite.add_expectation(expectation_configuration=expectation_configuration_7)
     context.save_expectation_suite(expectation_suite=suite)
 
     checkpoint = gx.checkpoint.SimpleCheckpoint(
@@ -98,12 +89,6 @@ def run_data_tests():
     )
 
     checkpoint_result = checkpoint.run()
-    
+   
     return checkpoint_result['success']
 
-
-today = datetime.today().strftime('%m-%d-%Y')
-context = gx.get_context()
-
-dataframe = pd.read_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv')
-print(dataframe['Experience Level'].unique())
