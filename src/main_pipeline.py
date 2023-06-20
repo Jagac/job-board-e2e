@@ -191,7 +191,7 @@ def main():
     if run_data_tests == True:
         logger.info("Passed quality tests")
     else:
-        logger.info("Fassed quality tests, please check quality report")
+        logger.info("Failed quality tests, please check quality report")
         
     end3 = time.time() - start3
     logger.info("Quality tests took : {} seconds".format(end3))
