@@ -7,9 +7,7 @@ import time
 import psutil
 from data_quality_tests import run_data_tests
 
-# setting up a nicely formatted log
-today = datetime.today().strftime('%m-%d-%Y')
-yesterday = (datetime.now() - timedelta(1)).strftime('%m-%d-%Y')
+today = datetime.today().strftime('%Y-%m-%d')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -150,28 +148,24 @@ def extract():
     logger.info('Successfully converted to csv')
 
 
-def merge_transform():
-    new = pd.read_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv')
-    try:
-        old = pd.read_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {yesterday}.csv')
-    except:
-        old = pd.DataFrame()
-
-    new_df = pd.concat([new, old], axis=0)
-    new_df = new_df.drop_duplicates(subset=['ID'])
-    new_df['Report Date'] = today
+def transform():
+    df = pd.read_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index_col=False)
+    df = df.drop_duplicates(subset=['ID'])
+    df['Report Date'] = today
+    df['Published At'] = pd.to_datetime(df['Published At'])
+    df['Published At'] = df['Published At'].dt.strftime('%Y-%m-%d')
     
-    new_df = new_df[['Report Date', 'Published At', 'ID', 'Title', 'Street', 'City' , 'Country Code', 
+    df = df[['Report Date', 'Published At', 'ID', 'Title', 'Street', 'City' , 'Country Code', 
                      'Address Text','Marker Icon', 'Workplace Type', 'Company Name', 
                      'Company Size', 'Experience Level', 'Latitude', 'Longitude' ,
                      'Remote interview', 'Remote', 'Open to Hire Ukrainians', 'Skills',
                      'Employment Types', 'Salary From', 'Salary To']]
 
-    new_df.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index=False)
+    df.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index=False)
     logger.info('Successfully merged data')
     
 
-def main():
+def start_pipeline():
     start1 = time.time()
     extract()
     end1 = time.time() - start1
@@ -180,7 +174,7 @@ def main():
     logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
 
     start2 = time.time()
-    merge_transform()
+    transform()
     end2 = time.time() - start2
     logger.info("Merge took : {} seconds".format(end2))
     logger.info('Merge CPU usage {}%'.format(psutil.cpu_percent()))
@@ -199,4 +193,4 @@ def main():
     logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
     
 if __name__ == "__main__":
-    main()
+    start_pipeline()
