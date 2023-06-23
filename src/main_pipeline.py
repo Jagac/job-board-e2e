@@ -161,6 +161,8 @@ def transform():
                      'Remote interview', 'Remote', 'Open to Hire Ukrainians', 'Skills',
                      'Employment Types', 'Salary From', 'Salary To']]
 
+
+    df
     df.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index=False)
     logger.info('Successfully merged data')
     
