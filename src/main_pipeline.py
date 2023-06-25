@@ -1,18 +1,27 @@
 import json
 import pandas as pd
+import numpy as np
 import requests
 import logging.config
 from datetime import datetime, timedelta
 import time
 import psutil
 from data_quality_tests import run_data_tests
+import yaml
+
+with open("C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\src\\config.yaml", "r") as file:
+    global_variables = yaml.safe_load(file)
+
+json_path = global_variables['paths_to_save']['json_path']
+csv_path = global_variables['paths_to_save']['csv_path']
+logs_path = global_variables['paths_to_save']['logs_path']
 
 today = datetime.today().strftime('%Y-%m-%d')
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(levelname)s:  %(asctime)s:  %(process)s:  %(funcName)s:  %(message)s')
-file_handler = logging.FileHandler(f'/home/jagac/projects/job-board-e2e/etl_logs/etl_log_job {today}.log')
+file_handler = logging.FileHandler(f'{logs_path}/etl_log_job {today}.log')
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
@@ -28,7 +37,7 @@ def extract():
         try:
             url = 'https://justjoin.it/api/offers'
             r = requests.get(url, allow_redirects=True)
-            open(f'/home/jagac/projects/job-board-e2e/json_data/jobs {today}.json', 'wb').write(r.content)
+            open(f'{json_path}/jobs {today}.json', 'wb').write(r.content)
 
         except Exception as e:
             logger.exception(e)
@@ -38,7 +47,7 @@ def extract():
     def load_data():
         try:
             request_from_api()
-            f = open(f'/home/jagac/projects/job-board-e2e/json_data/jobs {today}.json', encoding="utf-8")
+            f = open(f'{json_path}/jobs {today}.json', encoding="utf-8")
             logger.info('Loaded: {}'.format(f))
             return json.load(f)
 
@@ -97,13 +106,13 @@ def extract():
                 try:
                     salary_from.append([i, salary_temp[i]['from']])
                 except:
-                    salary_from.append([i, 'na'])
+                    salary_from.append([i, np.nan])
                     
             for i in range(len(salary_temp)):
                 try:
                     salary_to.append([i, salary_temp[i]['to']])
                 except:
-                    salary_to.append([i, 'na'])
+                    salary_to.append([i, np.nan])
                     
             df = pd.DataFrame(data,
                             columns=['Title',
@@ -144,16 +153,19 @@ def extract():
     
     df_converted = create_dataframe()
     df_converted = df_converted.drop_duplicates(subset=['ID'])
-    df_converted.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index=False)
+    df_converted.to_csv(f'{csv_path}/data {today}.csv', index=False)
     logger.info('Successfully converted to csv')
 
 
 def transform():
-    df = pd.read_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index_col=False)
+    df = pd.read_csv(f'{csv_path}/data {today}.csv', index_col=False)
     df = df.drop_duplicates(subset=['ID'])
     df['Report Date'] = today
     df['Published At'] = pd.to_datetime(df['Published At'])
     df['Published At'] = df['Published At'].dt.strftime('%Y-%m-%d')
+    df['Report Date'] = pd.to_datetime(df['Report Date'])
+    df['Salary From'] = df['Salary From'].astype(float).astype('Int64')
+    df['Salary To'] = df['Salary To'].astype(float).astype('Int64')
     
     df = df[['Report Date', 'Published At', 'ID', 'Title', 'Street', 'City' , 'Country Code', 
                      'Address Text','Marker Icon', 'Workplace Type', 'Company Name', 
@@ -162,8 +174,7 @@ def transform():
                      'Employment Types', 'Salary From', 'Salary To']]
 
 
-    df
-    df.to_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv', index=False)
+    df.to_csv(f'{csv_path}/data {today}.csv', index=False)
     logger.info('Successfully merged data')
     
 
@@ -182,9 +193,8 @@ def start_pipeline():
     logger.info('Merge CPU usage {}%'.format(psutil.cpu_percent()))
     logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
 
-    
     start3 = time.time()
-    if run_data_tests == True:
+    if run_data_tests(csv_path) == True:
         logger.info("Passed quality tests")
     else:
         logger.info("Failed quality tests, please check quality report")
@@ -194,5 +204,6 @@ def start_pipeline():
     logger.info('Quality test CPU usage {}%'.format(psutil.cpu_percent()))
     logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
     
+
 if __name__ == "__main__":
     start_pipeline()

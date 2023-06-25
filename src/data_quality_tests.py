@@ -3,11 +3,11 @@ from great_expectations.core.expectation_configuration import ExpectationConfigu
 import pandas as pd
 from datetime import datetime
 
-def run_data_tests():
-    today = datetime.today().strftime('%m-%d-%Y')
+def run_data_tests(csv_path):
+    today = datetime.today().strftime('%Y-%m-%d')
     context = gx.get_context()
 
-    dataframe = pd.read_csv(f'/home/jagac/projects/job-board-e2e/csv_data/data {today}.csv')
+    dataframe = pd.read_csv(f'{csv_path}\\data {today}.csv')
     name = "job_board_frame"
 
     datasource = context.sources.add_pandas(name="my_pandas_datasource")

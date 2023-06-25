@@ -1,0 +1,4 @@
+paths_to_save:
+  json_path : "C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\json_data"
+  csv_path : "C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\csv_data"
+  logs_path : "C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\etl_logs"
