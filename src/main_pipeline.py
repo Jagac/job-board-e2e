@@ -8,8 +8,9 @@ import time
 import psutil
 from data_quality_tests import run_data_tests
 import yaml
+import os
 
-with open("C:\\Users\\jagos\\Documents\\GitHub\\job-board-e2e\\src\\config.yaml", "r") as file:
+with open("config.yaml", "r") as file:
     global_variables = yaml.safe_load(file)
 
 json_path = global_variables['paths_to_save']['json_path']
@@ -164,6 +165,7 @@ def transform():
     df['Published At'] = pd.to_datetime(df['Published At'])
     df['Published At'] = df['Published At'].dt.strftime('%Y-%m-%d')
     df['Report Date'] = pd.to_datetime(df['Report Date'])
+    df['Published At'] = pd.to_datetime(df['Published At'])
     df['Salary From'] = df['Salary From'].astype(float).astype('Int64')
     df['Salary To'] = df['Salary To'].astype(float).astype('Int64')
     
@@ -184,14 +186,14 @@ def start_pipeline():
     end1 = time.time() - start1
     logger.info("Extract took : {} seconds".format(end1))
     logger.info('Extract CPU usage {}%'.format(psutil.cpu_percent()))
-    logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
+    logger.info('RAM memory {}% used'.format(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2))
 
     start2 = time.time()
     transform()
     end2 = time.time() - start2
     logger.info("Merge took : {} seconds".format(end2))
     logger.info('Merge CPU usage {}%'.format(psutil.cpu_percent()))
-    logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
+    logger.info('RAM memory {}% used'.format(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2))
 
     start3 = time.time()
     if run_data_tests(csv_path) == True:
@@ -202,7 +204,7 @@ def start_pipeline():
     end3 = time.time() - start3
     logger.info("Quality tests took : {} seconds".format(end3))
     logger.info('Quality test CPU usage {}%'.format(psutil.cpu_percent()))
-    logger.info('RAM memory {}% used'.format(psutil.virtual_memory().percent))
+    logger.info('RAM memory {} MB used'.format(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2))
     
 
 if __name__ == "__main__":
