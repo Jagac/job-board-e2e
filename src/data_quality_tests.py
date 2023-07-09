@@ -1,6 +1,6 @@
+import pandas as pd
 import great_expectations as gx
 from great_expectations.core.expectation_configuration import ExpectationConfiguration
-import pandas as pd
 from datetime import datetime
 
 def run_data_tests(csv_path):
@@ -89,6 +89,7 @@ def run_data_tests(csv_path):
     )
 
     checkpoint_result = checkpoint.run()
-   
+    print(checkpoint_result)
+    
     return checkpoint_result['success']
 

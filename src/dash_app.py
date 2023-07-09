@@ -1,24 +1,28 @@
-from dash import Dash, dcc, html
+import pandas as pd
+from dash import Dash, dcc, html, Input, Output, callback
 import plotly.express as px
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output
 import plotly.graph_objects as go
-import dask.dataframe as dd
-import yaml
-import os
-import psutil
 import math
 from datetime import datetime
+import os
+import glob
+import yaml
+import psutil
 
 
-with open("config.yaml", "r") as file:
+with open("./config.yaml", "r") as file:
     global_variables = yaml.safe_load(file)
     
 csv_path = global_variables['paths_to_save']['csv_path']
-ddf = dd.read_csv(f'{csv_path}\\*.csv')
 
-
-app = Dash(__name__, meta_tags=[{"name": "viewport", "content": "width=device-width"}], 
+all_files = glob.glob(os.path.join(csv_path, '*.csv')) 
+df_from_each_file = (pd.read_csv(f) for f in all_files)
+ddf = pd.concat(df_from_each_file, ignore_index=True)
+ddf = ddf.drop_duplicates(subset=['ID'])
+ddf['Salary From'] = ddf['Salary From'].fillna(0)
+    
+app = Dash(__name__,meta_tags=[{"name": "viewport", "content": "width=device-width"}],
            external_stylesheets = [dbc.themes.DARKLY])
 
 colors = {
@@ -29,16 +33,12 @@ colors = {
     'text' : '#FFFFFF'
 }
 
-
 def create_map(ddf):
-    ddf = ddf.drop_duplicates(subset=['ID']).compute()
-    ddf['Salary From'] = ddf['Salary From'].fillna(0)
-
     map_fig = px.scatter_mapbox(ddf, lat="Latitude", lon="Longitude", 
                             color="Skills", size="Salary From",
-                    color_continuous_scale=px.colors.cyclical.IceFire,
-                    mapbox_style= 'open-street-map', zoom=3, 
-                    )
+                            color_continuous_scale=px.colors.cyclical.IceFire,
+                            mapbox_style= 'open-street-map', zoom=3, 
+                            title="Posting Locations")
 
     map_fig.update_layout(
         plot_bgcolor=colors['background'],
@@ -49,43 +49,53 @@ def create_map(ddf):
     return map_fig
 
 
-def create_smt(ddf):
-    ddf = ddf.drop_duplicates(subset=['ID']).compute()
-    ddf['Salary From'] = ddf['Salary From'].fillna(0)
-    ddf['Experience Level'] = ddf['Experience Level'].str[:10]
-    
-    test = px.scatter(ddf, x = 'Salary From', y = 'Experience Level', size = 'Salary From', 
-            hover_name = 'Title', color = 'Title', 
-            color_discrete_sequence=px.colors.qualitative.Alphabet,
-            ).update_yaxes(categoryarray = ['mid', 'senior', 'junior'])
+def create_scatter(ddf):
+    scatter = px.scatter(ddf, x = 'Salary From', y = 'Experience Level', size = 'Salary From', 
+                    hover_name = 'Title', color = 'Title', 
+                    color_discrete_sequence=px.colors.qualitative.Alphabet,
+                    title='Experience Level VS Salary'
+                    ).update_yaxes(categoryarray = ['junior', 'mid', 'senior'])
 
-    test.update_layout(
+    scatter.update_layout(
         plot_bgcolor=colors['background'],
         paper_bgcolor=colors['background'],
         font_color=colors['text']
     )
     
-    return test
+    return scatter
 
 
 def create_hist(ddf):
-    ddf = ddf.drop_duplicates(subset=['ID']).compute()
-    fig = px.histogram(ddf, x="Remote")
+    ddf = ddf.drop_duplicates(subset=['ID'])
+    hist = px.histogram(ddf, x="Remote",color="Employment Types", title="Remote Job Frequency")
     
-    fig.update_layout(
+    hist.update_layout(
         plot_bgcolor=colors['background'],
         paper_bgcolor=colors['background'],
         font_color=colors['text']
     )
 
-    return fig
+    return hist
 
 
+def create_hist_2(ddf):
+    ddf['Title'] = ddf['Title'].str[:10]
+    hist = px.histogram(ddf, x="Skills", color="Experience Level", title="Skills and Experience",
+                        range_x=(0, 10)).update_xaxes(categoryorder='total descending')
+    
+    hist.update_layout(
+        plot_bgcolor=colors['background'],
+        paper_bgcolor=colors['background'],
+        font_color=colors['text']
+    )
+    hist.update_layout(bargap=0.2)
+    
+    return hist
 
 job_map = create_map(ddf)
-test_graph = create_smt(ddf)
-test_hist = create_hist(ddf)
-
+scatter_graph = create_scatter(ddf)
+hist_graph = create_hist(ddf)
+hist_graph_2 = create_hist_2(ddf)
 
 app.layout = html.Div(className = 'document', children=[
     html.H1(children = "Welcome to the Job Board App", className = "text-center p-2", style = {'color': '#EFE9E7'}),
@@ -135,7 +145,14 @@ app.layout = html.Div(className = 'document', children=[
     
     html.Div([
         dbc.Row([
-            dbc.Col([dcc.Graph(figure=test_graph)]),
+            dbc.Col([dcc.Graph(figure=scatter_graph)]),
+        ])
+    ]),
+    
+    html.Div([
+        dbc.Row([
+            dbc.Col([dcc.Graph(figure=hist_graph)]),
+            dbc.Col([dcc.Graph(figure=hist_graph_2)])
         ])
     ]),
     
@@ -143,9 +160,10 @@ app.layout = html.Div(className = 'document', children=[
         dbc.Row([
             dbc.Col([dcc.Graph(figure=job_map)]),
         ])
-    ])
+    ]),
+    
 ])
-
+ 
             
 if __name__ == '__main__':
-    app.run_server(debug=True, use_reloader=True)
+    app.run_server(debug=True)

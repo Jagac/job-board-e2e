@@ -1,26 +1,37 @@
-import json
 import pandas as pd
 import numpy as np
 import requests
-import logging.config
-from datetime import datetime, timedelta
-import time
-import psutil
+import json
 from data_quality_tests import run_data_tests
-import yaml
+import logging.config
+from datetime import datetime
+import time
 import os
+import yaml
+import psutil
 
-with open("config.yaml", "r") as file:
+
+with open("./config.yaml", "r") as file:
     global_variables = yaml.safe_load(file)
+
 
 json_path = global_variables['paths_to_save']['json_path']
 csv_path = global_variables['paths_to_save']['csv_path']
 logs_path = global_variables['paths_to_save']['logs_path']
-
 today = datetime.today().strftime('%Y-%m-%d')
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+if os.path.exists(json_path) == False:
+    os.mkdir(json_path)
+    
+if os.path.exists(csv_path) == False:
+    os.mkdir(csv_path)
+    
+if os.path.exists(logs_path) == False:
+    os.mkdir(logs_path)
+    
 formatter = logging.Formatter('%(levelname)s:  %(asctime)s:  %(process)s:  %(funcName)s:  %(message)s')
 file_handler = logging.FileHandler(f'{logs_path}/etl_log_job {today}.log')
 file_handler.setFormatter(formatter)
@@ -29,7 +40,7 @@ logger.addHandler(file_handler)
 
 def extract():
     """
-    Extract data from the json from justjoin API and transform it into a pandas dataframe and csv
+    Extract data from the json from JustJoin API and transform it into a pandas dataframe and later, csv
     :return: pd.DataFrame
     """
     logger.info('Start Extract Session')
@@ -209,3 +220,4 @@ def start_pipeline():
 
 if __name__ == "__main__":
     start_pipeline()
+    
