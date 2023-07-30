@@ -2,7 +2,7 @@
 
 This project grabs data from a job posting website and uses Plotly/Dash for visualizations.
 
-![Alt text](demo.gif) / ![](demo.gif)
+![Alt text](demo.gif)
 
 ## Prerequisites
 
