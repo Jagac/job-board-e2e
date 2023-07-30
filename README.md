@@ -2,6 +2,8 @@
 
 This project grabs data from a job posting website and uses Plotly/Dash for visualizations.
 
+![](https://github.com/job-board-e2e/demo.gif)
+
 ## Prerequisites
 
 App needs a virtualenv library to be globally installed as it creates the environment by itself. Therefore simply run a:

@@ -8,11 +8,13 @@ today = datetime.today().strftime('%Y-%m-%d')
 print(f'{today}: [ Welcome to the app! ]')
 operating_system = input("Enter your operating system: ")
 
-os.system('python -m venv env')
 
-if operating_system == "Windows":
+
+if operating_system == "Windows" or operating_system == "windows":
+    os.system('python -m venv env')
     os.system('env\\Scripts\\activate')
 else:
+    os.system('python3 -m venv env')
     os.system('source .env/bin/activate')
     
 os.system("pip install -r requirements.txt")
